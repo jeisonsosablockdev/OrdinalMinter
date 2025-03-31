@@ -39,10 +39,11 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({
             onClick={isYoursInstalled() ? onConnectYours : handleInstallClick}
           >
             <div className="flex items-center">
-              <svg viewBox="0 0 100 100" className="h-8 w-8 mr-3 text-primary">
-                <rect width="100" height="100" rx="20" fill="currentColor" />
-                <path d="M35 30L65 30L65 40L75 40L75 70L45 70L45 60L35 60Z" fill="#333" />
-              </svg>
+              <img 
+              src="https://raw.githubusercontent.com/yours-org/yours-wallet/main/public/logo192.png" 
+              alt="Yours Wallet"
+              className="h-8 w-8 mr-3"
+            />
               <span>{isYoursInstalled() ? 'Connect Yours Wallet' : 'Install Yours Wallet'}</span>
             </div>
             <span className="material-icons">

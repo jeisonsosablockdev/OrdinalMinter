@@ -63,10 +63,13 @@ export function WalletProvider({ children }: Props) {
         setIsConnected(true);
         return true;
       }
-      return false;
+      throw new Error("No accounts returned from wallet");
     } catch (error) {
       console.error("Error connecting to wallet:", error);
-      return false;
+      if (error instanceof Error) {
+        throw new Error(`Wallet connection failed: ${error.message}`);
+      }
+      throw new Error("Wallet connection failed. Please ensure Yours Wallet is unlocked and try again.");
     }
   };
 
