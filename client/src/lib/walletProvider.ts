@@ -1,3 +1,4 @@
+
 import * as React from "react";
 
 interface WalletState {
@@ -6,6 +7,7 @@ interface WalletState {
   connectWallet: () => Promise<boolean>;
   disconnectWallet: () => void;
   signTransaction: (txData: any) => Promise<string | null>;
+  isYoursInstalled: () => boolean;
 }
 
 const defaultContext: WalletState = {
@@ -13,7 +15,8 @@ const defaultContext: WalletState = {
   address: null,
   connectWallet: async () => false,
   disconnectWallet: () => {},
-  signTransaction: async () => null
+  signTransaction: async () => null,
+  isYoursInstalled: () => false
 };
 
 const WalletContext = React.createContext(defaultContext);
@@ -26,32 +29,40 @@ interface Props {
   children: React.ReactNode;
 }
 
+declare global {
+  interface Window {
+    yours?: {
+      isConnected: () => Promise<boolean>;
+      requestAccounts: () => Promise<string[]>;
+      getAccounts: () => Promise<string[]>;
+      signTransaction: (txData: any) => Promise<string>;
+    };
+  }
+}
+
 export function WalletProvider({ children }: Props) {
   const [isConnected, setIsConnected] = React.useState(false);
   const [address, setAddress] = React.useState<string | null>(null);
 
-  // Check if Yours wallet is installed
   const isYoursInstalled = () => {
-    return typeof window !== "undefined" && "yours" in window;
+    return typeof window !== "undefined" && 
+           typeof window.yours !== "undefined" && 
+           typeof window.yours.isConnected === "function";
   };
 
-  // Connect to Yours wallet
   const connectWallet = async (): Promise<boolean> => {
     if (!isYoursInstalled()) {
-      console.error("Yours wallet not found. Please install Yours wallet extension.");
+      window.open("https://yours.org/", "_blank");
       return false;
     }
 
     try {
-      // @ts-ignore - yours wallet is injected by browser extension
-      const accounts = await window.yours.requestAccounts();
-      
+      const accounts = await window.yours!.requestAccounts();
       if (accounts && accounts.length > 0) {
         setAddress(accounts[0]);
         setIsConnected(true);
         return true;
       }
-      
       return false;
     } catch (error) {
       console.error("Error connecting to wallet:", error);
@@ -59,39 +70,35 @@ export function WalletProvider({ children }: Props) {
     }
   };
 
-  // Disconnect wallet
   const disconnectWallet = () => {
     setIsConnected(false);
     setAddress(null);
   };
 
-  // Sign transaction
   const signTransaction = async (txData: any): Promise<string | null> => {
     if (!isConnected || !isYoursInstalled()) {
       return null;
     }
 
     try {
-      // @ts-ignore - yours wallet is injected by browser extension
-      const signedTx = await window.yours.signTransaction(txData);
-      return signedTx;
+      return await window.yours!.signTransaction(txData);
     } catch (error) {
       console.error("Error signing transaction:", error);
       return null;
     }
   };
 
-  // Check if wallet is already connected on load
   React.useEffect(() => {
     const checkConnection = async () => {
       if (isYoursInstalled()) {
         try {
-          // @ts-ignore - yours wallet is injected by browser extension
-          const accounts = await window.yours.getAccounts();
-          
-          if (accounts && accounts.length > 0) {
-            setAddress(accounts[0]);
-            setIsConnected(true);
+          const isWalletConnected = await window.yours!.isConnected();
+          if (isWalletConnected) {
+            const accounts = await window.yours!.getAccounts();
+            if (accounts && accounts.length > 0) {
+              setAddress(accounts[0]);
+              setIsConnected(true);
+            }
           }
         } catch (error) {
           console.error("Error checking wallet connection:", error);
@@ -104,13 +111,16 @@ export function WalletProvider({ children }: Props) {
 
   return React.createElement(
     WalletContext.Provider,
-    { value: {
-      isConnected,
-      address,
-      connectWallet,
-      disconnectWallet,
-      signTransaction
-    }},
+    {
+      value: {
+        isConnected,
+        address,
+        connectWallet,
+        disconnectWallet,
+        signTransaction,
+        isYoursInstalled
+      }
+    },
     children
   );
 }
