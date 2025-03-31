@@ -50,10 +50,40 @@ export function WalletProvider({ children }: Props) {
            typeof window.yours.isConnected === "function";
   };
 
+  const checkWalletConnection = async (): Promise<boolean> => {
+    if (!isYoursInstalled()) {
+      return false;
+    }
+
+    try {
+      // Check if wallet is connected
+      const connected = await window.yours!.isConnected();
+      if (!connected) {
+        throw new Error("Wallet is not connected");
+      }
+
+      // Verify we can get accounts (proves we have network access)
+      const accounts = await window.yours!.getAccounts();
+      if (!accounts || accounts.length === 0) {
+        throw new Error("No accounts available");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Wallet connection check failed:", error);
+      return false;
+    }
+  };
+
   const connectWallet = async (): Promise<boolean> => {
     if (!isYoursInstalled()) {
       window.open("https://yours.org/", "_blank");
       return false;
+    }
+
+    const isConnected = await checkWalletConnection();
+    if (!isConnected) {
+      throw new Error("Unable to establish connection with wallet. Please ensure your wallet is unlocked and has network access.");
     }
 
     try {
