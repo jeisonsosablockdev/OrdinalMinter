@@ -182,29 +182,7 @@ const MintingSection: React.FC<MintingSectionProps> = ({
         <h2 className="text-xl font-semibold mb-4">{t("mintingSection.title")}</h2>
         
         {/* Supply Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-background/80 rounded-lg p-3 border border-gray-800">
-            <h3 className="text-xs text-gray-400 mb-1">{t("mintingSection.maximumSupply")}</h3>
-            <p className="text-lg font-medium text-white">{formatNumber(collectionStats?.totalSupply || 0)}</p>
-          </div>
-          <div className="bg-background/80 rounded-lg p-3 border border-gray-800">
-            <h3 className="text-xs text-gray-400 mb-1">{t("mintingSection.remaining")}</h3>
-            <p className="text-lg font-medium text-white">{formatNumber(collectionStats?.remainingSupply || 0)}</p>
-          </div>
-          <div className="bg-background/80 rounded-lg p-3 border border-gray-800">
-            <h3 className="text-xs text-gray-400 mb-1">{t("mintingSection.percentageMinted")}</h3>
-            <p className="text-lg font-medium text-white">
-              {((collectionStats?.percentageMinted || 0) / 100).toLocaleString(undefined, {
-                style: 'percent',
-                minimumFractionDigits: 2
-              })}
-            </p>
-          </div>
-          <div className="bg-background/80 rounded-lg p-3 border border-gray-800">
-            <h3 className="text-xs text-gray-400 mb-1">{t("mintingSection.price")}</h3>
-            <p className="text-lg font-medium text-primary">FREE</p>
-          </div>
-        </div>
+
         
         {/* Ordinal Selection Form */}
         <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleValidateOrdinal(); }}>
